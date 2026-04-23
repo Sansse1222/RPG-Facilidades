@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Sistema RPG Completo</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: linear-gradient(135deg, #0f0f17, #1c1c2b);
+    color: #eaeaf0;
+    text-align: center;
+    margin: 0;
+}
+
+h1 {
+    margin: 20px 0;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.box {
+    background: #1f1f2e;
+    padding: 20px;
+    margin: 10px;
+    border-radius: 12px;
+    width: 320px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    transition: 0.2s;
+}
+
+.box:hover {
+    transform: scale(1.02);
+}
+
+h2 {
+    margin-bottom: 10px;
+    color: #7dd3fc;
+}
+
+input, select {
+    margin: 5px;
+    padding: 8px;
+    width: 85%;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    background: #2c2c3c;
+    color: white;
+}
+
+button {
+    padding: 8px 15px;
+    background: #4ade80;
+    border: none;
+    color: black;
+    border-radius: 6px;
+    margin-top: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #22c55e;
+}
+
+p {
+    white-space: pre-line;
+    background: #151520;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    text-align: left;
+    font-size: 14px;
+}
+
+label {
+    font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>⚔ Sistema RPG Completo ⚔</h1>
+
+<div class="container">
+
+<div class="box">
+<h2>Dano por Gravidade</h2>
+<input type="number" id="altura" placeholder="Altura">
+<input type="number" id="massa" placeholder="Massa">
+<button onclick="calcularDano()">Calcular</button>
+<p id="resultadoDano"></p>
+</div>
+
+<div class="box">
+<h2>Dano por NEX</h2>
+<select id="nexDano"></select>
+<button onclick="calcularNexDano()">Ver</button>
+<p id="resultadoNex"></p>
+</div>
+
+<div class="box">
+<h2>Fome e Sede</h2>
+<input type="number" id="fome" placeholder="Fome">
+<input type="number" id="sede" placeholder="Sede">
+<button onclick="passarTurno()">Passar Turno</button>
+<p id="resultadoTurno"></p>
+</div>
+
+<div class="box">
+<h2>Dano Recebido</h2>
+<input type="number" id="danoBase" placeholder="Dano base">
+<input type="number" id="modificador" placeholder="+/- %">
+<input type="number" id="armor" placeholder="Armadura">
+<select id="tipoDano">
+<option value="0.3">30%</option>
+<option value="0.7">70%</option>
+</select>
+<button onclick="calcularRecebido()">Calcular</button>
+<p id="resultadoRecebido"></p>
+</div>
+
+<div class="box">
+<h2>Progressão NEX</h2>
+<select id="nexProg"></select>
+<button onclick="calcularNex()">Ver</button>
+<p id="nexAtual"></p>
+<p id="nexTotal"></p>
+</div>
+
+<div class="box">
+<h2>Stamina da Habilidade</h2>
+<input type="number" id="danoMin" placeholder="Dano mínimo">
+<input type="number" id="danoMax" placeholder="Dano máximo">
+<input type="number" id="efeitoDano" placeholder="Dano extra">
+<label><input type="checkbox" id="efeitoNaoDano"> Efeito sem dano</label>
+<input type="number" id="alcance" placeholder="Alcance">
+<button onclick="calcularStamina()">Calcular</button>
+<p id="resultadoStamina"></p>
+</div>
+
+</div>
+
+<script>
+// (MESMO SCRIPT QUE VOCÊ JÁ TEM — NÃO ALTERADO)
+
+// POPULAR SELECTS
+for(let i=5;i<=100;i+=5){
+    nexDano.innerHTML += `<option value="${i}">${i}%</option>`;
+    nexProg.innerHTML += `<option value="${i}">${i}%</option>`;
+}
+
+function calcularDano(){
+    let h=altura.value,m=massa.value;
+    resultadoDano.innerText="Dano: "+((Math.sqrt(h)*m)/4).toFixed(2);
+}
+
+const tabelaNex={
+30:{max:160,med:80,min:50},
+35:{max:170,med:90,min:60},
+40:{max:180,med:100,min:70},
+45:{max:190,med:110,min:80},
+50:{max:200,med:120,min:90},
+55:{max:500,med:250,min:100},
+60:{max:550,med:300,min:150},
+65:{max:600,med:350,min:200},
+70:{max:650,med:400,min:250},
+75:{max:700,med:450,min:300},
+80:{max:750,med:500,min:350},
+85:{max:800,med:550,min:400},
+90:{max:850,med:600,min:450},
+95:{max:900,med:650,min:500},
+100:{max:950,med:700,min:550}
+};
+
+function calcularNexDano(){
+    let n=nexDano.value;
+    let d=tabelaNex[n];
+    resultadoNex.innerText=`Max:${d.max} Médio:${d.med} Min:${d.min}`;
+}
+
+function regenFome(f){
+if(f>=91)return 10;if(f>=81)return 9;if(f>=71)return 8;if(f>=61)return 7;
+if(f>=51)return 6;if(f>=41)return 4;if(f>=31)return 2;if(f>=21)return 0;
+if(f>=11)return -2;if(f>=1)return -4;return -6;
+}
+function regenSede(s){
+if(s>=91)return 5;if(s>=81)return 4;if(s>=71)return 3;if(s>=61)return 2;
+if(s>=51)return 1;if(s>=41)return 0;if(s>=31)return -1;if(s>=21)return -2;
+if(s>=11)return -3;if(s>=1)return -4;return -5;
+}
+function passarTurno(){
+let f=parseInt(fome.value),s=parseInt(sede.value);
+let sta=regenFome(f),vida=regenSede(s);
+f=Math.max(0,f-3);s=Math.max(0,s-2);
+fome.value=f;sede.value=s;
+resultadoTurno.innerText=`Stamina:${sta} Vida:${vida}`;
+}
+
+function calcularRecebido(){
+let d=parseFloat(danoBase.value);
+let mod=(parseFloat(modificador.value)||0)/100;
+let arm=parseFloat(armor.value)||0;
+let tipo=parseFloat(tipoDano.value);
+let modD=d*(1+mod);
+let recebido=Math.max(0,modD-arm);
+let dura=d*tipo;
+resultadoRecebido.innerText=
+`Dano recebido:${recebido.toFixed(2)} | Durabilidade gasta:${dura.toFixed(2)}`;
+}
+
+const eventos={
+5:"Classe",10:"Subclasse",15:"+HP",20:"+Stamina",25:"Haki Armamento",
+30:"Haki Observação",35:"Subclasse 2",40:"+HP",45:"+Stamina",
+50:"Haki Rei",55:"Maestria",60:"Subclasse 3",65:"+HP",70:"+Stamina",
+75:"Técnica",80:"Haki avançado",85:"Auge raça",90:"Haki rei avançado",
+95:"Despertar",100:"Ápice"
+};
+
+function calcularNex(){
+let n=parseInt(nexProg.value);
+let at=0,per=0,hp=0,sta=0,extra=[];
+for(let i=5;i<=n;i+=5){
+if(i%2==0)at++;else per++;
+if(eventos[i]){
+if(eventos[i]==="+HP")hp+=20;
+else if(eventos[i]==="+Stamina")sta+=10;
+else extra.push(eventos[i]);
+}}
+nexAtual.innerText=`NEX ${n}%: ${eventos[n]||""}`;
+nexTotal.innerText=
+`Atributos:${at} Perícias:${per}
+HP:+${hp} Stamina:+${sta}
+Extras:${extra.join(", ")}`;
+}
+
+function fatorNex(n){
+if(n<=50)return 6+((n-30)/5);
+return 10+((n-50)/5)*2;
+}
+
+function calcularStamina(){
+let n=parseInt(nexProg.value);
+let min=danoMin.value,max=danoMax.value;
+let extra=parseFloat(efeitoDano.value)||0;
+let nd=efeitoNaoDano.checked;
+let alc=parseFloat(alcance.value)||0;
+
+let ef=(min+max)/2,f=fatorNex(n);
+let A=ef/f;
+let B=extra>0?Math.max(1,(extra/2)/f):0;
+let C=nd?3:0;
+let D=alc;
+let total=A+B+C+D;
+
+resultadoStamina.innerText=
+`A:${A.toFixed(2)} B:${B.toFixed(2)} C:${C} D:${D}
+Total:${total.toFixed(2)}`;
+}
+</script>
+
+</body>
+</html>
